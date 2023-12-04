@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import PolyCollection
+import time
 
 import numpy as np
 import string
@@ -25,6 +26,8 @@ def ArrayNew(Array):
     Ac_n=np.ones((1,Array.shape[0]))
     Array_n[:,:-1]=Array
     Array_n[:,-1]=Ac_n
+    
+    
     return Array_n
 
 # overall scaling transformation matrix: Array_n(before transformation) -> ArrayT (after transformation)
@@ -45,36 +48,34 @@ def TscaleAll(sall, Array_n):
 
 # rotation transformation: Array_n(before transformation) -> ATr (after transformation)
 # T_rx: rotation in x
-def Trx(theta,Attay_n): 
-    theta=np.pi*2/3
-    cs=np.cos(theta)
-    ss=np.sin(theta)
-    T_rx = np.array([[1, 0, 0, 0],[0, cs, ss, 0], [0, -ss, cs, 0], [0, 0, 0, 1]])
+def Trx(theta, Attay_n): 
+    cs = np.cos(theta)
+    ss = np.sin(theta)
+    T_rx = np.array([[1, 0, 0, 0], [0, cs, ss, 0], [0, -ss, cs, 0], [0, 0, 0, 1]])
     AT_r = T_rx @ Attay_n.T
-    ATr=AT_r[:-1,:].T
+    ATr = AT_r.T
     return ATr
 
 # rotation transformation: Array_n(before transformation) -> ATr (after transformation)
 # T_rx: rotation in y
-def Try(theta,Attay_n):
-    theta=np.pi*2/3
-    cs=np.cos(theta)
-    ss=np.sin(theta)    
-    T_ry = np.array([[cs, 0 -ss, 0], [0, 1, 0, 0], [ss, 0, cs, 0], [0, 0, 0, 1]])
+def Try(theta, Attay_n):
+    cs = np.cos(theta)
+    ss = np.sin(theta)    
+    T_ry = np.array([[cs, 0, -ss, 0], [0, 1, 0, 0], [ss, 0, cs, 0], [0, 0, 0, 1]])
     AT_r = T_ry @ Attay_n.T
-    ATr=AT_r[:-1,:].T
+    ATr = AT_r.T
     return ATr
 
 # rotation transformation: Array_n(before transformation) -> ATr (after transformation)
 # T_rx: rotation in z
-def Trz(theta,Attay_n):
-    theta=np.pi*2/3
-    cs=np.cos(theta)
-    ss=np.sin(theta)
+def Trz(theta, Attay_n):
+    cs = np.cos(theta)
+    ss = np.sin(theta)
     T_rz = np.array([[cs, ss, 0, 0], [-ss, cs, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])    
     AT_r = T_rz @ Attay_n.T
-    ATr=AT_r[:-1,:].T
+    ATr = AT_r.T
     return ATr
+
 
 # translation transformation: Array_n(before transformation) -> ATtr (after transformation)
 # tx, ty, and tz in x, y, and z direction
@@ -130,10 +131,6 @@ def plotting(A,B,C,D, c,a,m):
 # 육면체의 선형변환들 클래스화
 class Hexahedron():
     def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
-        
         self.A = sixSideA(x, y, z)
         self.B = sixSideB(x, y, z)
         self.C = sixSideC(x, y, z)
@@ -143,6 +140,12 @@ class Hexahedron():
         self.newB = ArrayNew(self.B)
         self.newC = ArrayNew(self.C)
         self.newD = ArrayNew(self.D)
+        
+    def setup(self):
+        self.newA = ArrayNew(self.newA)
+        self.newB = ArrayNew(self.newB)
+        self.newC = ArrayNew(self.newC)
+        self.newD = ArrayNew(self.newD)
         
     # 선형변환들을 초기화시키고 원형으로 돌림
     def clear(self):
@@ -156,12 +159,14 @@ class Hexahedron():
         self.newB = Ttr(dx, dy, dz, self.newB)
         self.newC = Ttr(dx, dy, dz, self.newC)
         self.newD = Ttr(dx, dy, dz, self.newD)
+        self.setup()
     
     def rotate_x(self, theta):
         self.newA = Trx(theta, self.newA)
         self.newB = Trx(theta, self.newB)
         self.newC = Trx(theta, self.newC)
         self.newD = Trx(theta, self.newD)
+        self.setup()
     
     def rotate_y(self, theta):
         self.newA = Try(theta, self.newA)
@@ -190,10 +195,118 @@ class Hexahedron():
     def draw_cube(self, c, a, m):
         plotting(self.newA, self.newB, self.newC, self.newD, c, a, m)
   
-        
-slime = Hexahedron(7, 7, 7)
-slime.transpose(7, -10, -13)
-slime.draw_cube("g", 0.6, "")
+#slime(Hexahedron 1)
+murshroom_body = Hexahedron(7, 7, 7)
+murshroom_body.transpose(10, 0, -18)
+murshroom_body.draw_cube("tan", 0.6, "")
 
+murshroom_head = Hexahedron(9, 9, 1)
+murshroom_head.transpose(9, -1, -11)
+murshroom_head.draw_cube("maroon", 0.6, "")
 
+#left_foot(Hexahedron 2)
+human_left_foot = Hexahedron(4, 3, 2)
+human_left_foot.transpose(-3, -2, -18)
+human_left_foot.draw_cube("k", 0.6, "")
+
+#right_foot(Hexahedron 3)
+human_right_foot = Hexahedron(4, 3, 2)
+human_right_foot.transpose(-3, 2, -18)
+human_right_foot.draw_cube("k", 0.6, "")
+
+#left_leg(Hexahedron 4)
+human_left_leg = Hexahedron(3, 3, 6)
+human_left_leg.transpose(-3, -2, -16)
+human_left_leg.draw_cube("b", 0.6, "")
+
+#right_leg(Hexahedron 5)
+human_right_leg = Hexahedron(3, 3, 6)
+human_right_leg.transpose(-3, 2, -16)
+human_right_leg.draw_cube("b", 0.6, "")
+
+#body(Hexahedron 6)
+human_body = Hexahedron(3, 7, 8)
+human_body.transpose(-3, -2, -10)
+human_body.draw_cube("r", 0.6, "")
+
+#left_arm (Hexahedron 7)
+human_left_arm = Hexahedron(2.5, 2.5, 6)
+human_left_arm.transpose(-3, -4.5, -8)
+human_left_arm.draw_cube("r", 0.6, "")
+
+#right_arm (Hexahedron 8)
+human_right_arm = Hexahedron(2.5, 2.5, 6)
+human_right_arm.transpose(-3, 5, -8)
+human_right_arm.draw_cube("r", 0.6, "")
+
+#left_hand (Hexahedron 9)
+human_left_hand = Hexahedron(2.5, 2.5, 2)
+human_left_hand.transpose(-3, -4.5, -10)
+human_left_hand.draw_cube("y", 0.6, "")
+
+#right_hand (Hexahedron 10)
+human_right_hand = Hexahedron(2.5, 2.5, 2)
+human_right_hand.transpose(-3, 5, -10)
+human_right_hand.draw_cube("y", 0.6, "")
+
+#head (Hexahedron 11)
+human_head = Hexahedron(3, 3, 3)
+human_head.transpose(-3, 0, -2)
+human_head.draw_cube("y", 0.6, "")
+
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+# 코드는 여기에 들어갑니다.
+
+def update(frame):
+    # 프레임마다 회전
+    murshroom_body.rotate_y(np.radians(1))
+    murshroom_head.rotate_y(np.radians(1))
+    human_left_foot.rotate_y(np.radians(1))
+    human_right_foot.rotate_y(np.radians(1))
+    human_left_leg.rotate_y(np.radians(1))
+    human_right_leg.rotate_y(np.radians(1))
+    human_body.rotate_y(np.radians(1))
+    human_left_arm.rotate_y(np.radians(1))
+    human_right_arm.rotate_y(np.radians(1))
+    human_left_hand.rotate_y(np.radians(1))
+    human_right_hand.rotate_y(np.radians(1))
+    human_head.rotate_y(np.radians(1))
+
+    # 버섯과 사람의 충돌 체크
+    mushroom_position = np.array([murshroom_body.newA[0, 0], murshroom_body.newA[0, 1], murshroom_body.newA[0, 2]])
+    mario_position = np.array([human_body.newA[0, 0], human_body.newA[0, 1], human_body.newA[0, 2]])
+
+    distance = np.linalg.norm(mushroom_position - mario_position)
+
+    # 충돌 시 사람 몸집 커지기
+    if distance < 3:  # 임의의 충돌 거리
+        human_body.scale(1.1, 1.1, 1.1)
+        human_left_leg.scale(1.1, 1.1, 1.1)
+        human_right_leg.scale(1.1, 1.1, 1.1)
+        human_left_arm.scale(1.1, 1.1, 1.1)
+        human_right_arm.scale(1.1, 1.1, 1.1)
+
+    # 그림 업데이트
+    ax.cla()
+    ax.set_xlim(xrange)
+    ax.set_ylim(yrange)
+    ax.set_zlim(zrange)
+
+    murshroom_body.draw_cube("tan", 0.6, "")
+    murshroom_head.draw_cube("maroon", 0.6, "")
+    human_left_foot.draw_cube("k", 0.6, "")
+    human_right_foot.draw_cube("k", 0.6, "")
+    human_left_leg.draw_cube("b", 0.6, "")
+    human_right_leg.draw_cube("b", 0.6, "")
+    human_body.draw_cube("r", 0.6, "")
+    human_left_arm.draw_cube("r", 0.6, "")
+    human_right_arm.draw_cube("r", 0.6, "")
+    human_left_hand.draw_cube("y", 0.6, "")
+    human_right_hand.draw_cube("y", 0.6, "")
+    human_head.draw_cube("y", 0.6, "")
+
+# 애니메이션 생성
+ani = FuncAnimation(fig, update, frames=360, interval=50)
 plt.show()
